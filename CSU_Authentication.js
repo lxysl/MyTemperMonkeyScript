@@ -1,11 +1,10 @@
 // ==UserScript==
-// @name         CSULibrary_Login
+// @name         CSU_Authentication
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match        http://lib.csu.edu.cn/
-// @match        http://libuser.csu.edu.cn/center/ifcuas/*
+// @match        https://ca.csu.edu.cn/authserver/*
 // @grant        none
 // ==/UserScript==
 
@@ -14,8 +13,7 @@ var password="";
 
 (function() {
     'use strict';
-
-    document.getElementById("userId").value=username;
+    document.getElementById("username").value=username;
     document.getElementById("password").value=password;
-    document.getElementsByTagName("form")[0].submit();
+    document.getElementById("login_submit").click();
 })();

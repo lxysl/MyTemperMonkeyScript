@@ -8,8 +8,8 @@
 // @grant        none
 // ==/UserScript==
 
-var username="01388239";
-var password="030733";
+var username="";
+var password="";
 
 (function() {
     'use strict';
