@@ -11,9 +11,9 @@
 var username="";
 var password="";
 
-(function() {
+window.addEventListener('load', function() {
     'use strict';
-    document.getElementById("username").value=username;
-    document.getElementById("password").value=password;
-    document.getElementById("login_submit").click();
-})();
+    document.querySelector("#username").value=username;
+    document.querySelector("#password").value=password;
+    document.querySelector("#login_submit").click();
+}, false);
