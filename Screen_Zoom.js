@@ -11,22 +11,11 @@
 (function () {
     'use strict';
     console.log("屏幕分辨率为：" + screen.width + "*" + screen.height);
-    if (document.getElementsByTagName('body')[0].style.zoom === "") {
-        if (screen.width === 2560 && screen.height === 1441) {
-            document.getElementsByTagName('body')[0].style.zoom = 1.5;
-        }
-        if (screen.width === 1536 && screen.height === 864) {
-            document.getElementsByTagName('body')[0].style.zoom = 1;
-        }
+    if (screen.width === 2560 && screen.height === 1440) {
+        document.body.style.zoom = "100%";
+        document.body.style.zoom = "125%";
     }
-    if (document.getElementsByTagName('body')[0].style.zoom === "1.5") {
-        if (screen.width === 1536 && screen.height === 864) {
-            document.getElementsByTagName('body')[0].style.zoom = 1;
-        }
-    }
-    if (document.getElementsByTagName('body')[0].style.zoom === "1") {
-        if (screen.width === 2560 && screen.height === 1441) {
-            document.getElementsByTagName('body')[0].style.zoom = 1.5;
-        }
+    if (screen.width === 1920 && screen.height === 1080) {
+        document.body.style.zoom = "100%";
     }
 })();
