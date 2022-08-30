@@ -4,10 +4,13 @@
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match        https://vms.cnpc.com.cn:9999/gps-web/main.html#/*
+// @match        https://vms.cnpc.com.cn:9999/gps-web/main.html*
 // @icon         https://vms.cnpc.com.cn:9999/gps-web/favicon.ico
 // @grant        none
 // ==/UserScript==
+
+let RUNS = 4; // 每执行几次报警处理刷新一次页面
+let INTERVALS = 20 * 1000; // 每次处理报警间隔x秒 (x * 1000 ms)
 
 let alarmDict = {
     "疲劳驾驶": "您已超速，请减速行驶！",
@@ -64,7 +67,7 @@ let alarmDict = {
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
 window.inputValue = function (dom, st) {
-    console.log(dom);
+    // console.log(dom);
     var evt = new InputEvent('input', {
         inputType: 'insertText',
         data: st,
@@ -73,6 +76,31 @@ window.inputValue = function (dom, st) {
     });
     dom.value = st;
     dom.dispatchEvent(evt);
+}
+
+async function solveAll() {
+    // 点击“我知道了”
+    await sleep(2000);
+    while (document.querySelector("#box0 > div.WindowDiv_content_3pQPU > div > div:nth-child(5) > button") !== null) {
+        document.querySelector("#box0 > div.WindowDiv_content_3pQPU > div > div:nth-child(5) > button").click();
+        await sleep(1000);
+    }
+    // 进入报警界面
+    await sleep(2000);
+    document.querySelector("body > div.MainApp_container_2bJW3 > div.MainApp_header_1aQsc > div.HeaderBar_container_2sLX1 > div.HeaderBar_tool_bar_m7Ca4 > div.RealTimeAlarm_alarm_FQrU9 > div.RealTimeAlarm_alarmCountBox_sVPh9").click();
+    // 选择“全部未处理”标签
+    await sleep(2000);
+    var item = document.querySelector("body > div.MainApp_container_2bJW3 > div.MainApp_header_1aQsc > div.HeaderBar_container_2sLX1 > div.HeaderBar_tool_bar_m7Ca4 > div.RealTimeAlarm_alarm_FQrU9 > div.container.RealTimeAlarmWindow_container_2Xg2L > div > div.RealTimeAlarmWindow_title_3kv0P > div.RealTimeAlarmWindow_alarmTabBox_3pMDF > div.RealTimeAlarmWindow_alarmTab.RealTimeAlarmWindow_alarmTab_29I4_.RealTimeAlarmWindow_alarmTab2");
+    if (item.childNodes[0].childNodes[1].innerText === '全部未处理') {
+        item.click();
+        for (var i = 0; i < RUNS; ++i) {
+            solveAlarm().then();
+            // 刷新
+            document.querySelector("body > div.MainApp_container_2bJW3 > div.MainApp_header_1aQsc > div.HeaderBar_container_2sLX1 > div.HeaderBar_tool_bar_m7Ca4 > div.RealTimeAlarm_alarm_FQrU9 > div.container.RealTimeAlarmWindow_container_2Xg2L > div > div.RealTimeAlarmWindow_rightBox_2GfE8 > div.Toolbar_toolbar_7SMZD.Toolbar_toolbar_zero_Mw76N.RealTimeAlarmWindow_toolbar_17MsQ > div.Toolbar_left_ZORKd.Toolbar_left_zero_3EU6A > button:nth-child(5)").click();
+            await sleep(INTERVALS);
+        }
+    }
+    window.location.reload();
 }
 
 async function solveAlarm() {
@@ -93,18 +121,31 @@ async function solveAlarm() {
             // 点击处理按钮
             document.querySelector("body > div.MainApp_container_2bJW3 > div.MainApp_header_1aQsc > div.HeaderBar_container_2sLX1 > div.HeaderBar_tool_bar_m7Ca4 > div.RealTimeAlarm_alarm_FQrU9 > div.container.RealTimeAlarmWindow_container_2Xg2L > div > div.RealTimeAlarmWindow_rightBox_2GfE8 > div.Toolbar_toolbar_7SMZD.Toolbar_toolbar_zero_Mw76N.RealTimeAlarmWindow_toolbar_17MsQ > div.Toolbar_left_ZORKd.Toolbar_left_zero_3EU6A > button:nth-child(6)").click();
             await sleep(2000);
-            // 填写左侧消息
             var leftDom = document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_body_fyic5 > div.AlarmDealBox_body_bottomBox_3WfsT > div.AlarmDealBox_body_bottomBox_main_2-luY > div:nth-child(1) > div.CmdSendText_body_2cy6w > div > div.CmdSendText_textMessageBox_2idnZ > div > div.CmdSendText_param_layout_19xQd > div > div > div > input");
-            window.inputValue(leftDom, msg);
-            // 填写右侧消息
-            var rightDom = document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_body_fyic5 > div.AlarmDealBox_body_bottomBox_3WfsT > div.AlarmDealBox_body_bottomBox_main_2-luY > div.AlarmDealBox_desBox_3IyGi > div:nth-child(2) > div.InputTextArea_container_2gCq8.InputTextArea_border_xAquO.AlarmDealBox_InputTextArea_7EoKs > div > textarea")
-            window.inputValue(rightDom, msg);
-            await sleep(1000);
-            // 提交处理
-            document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_body_fyic5 > div.AlarmDealBox_body_bottomBox_3WfsT > div.AlarmDealBox_body_bottomBox_buttonBox_2nuEr > div > button:nth-child(1)").click();
-            await sleep(1000);
-            // 关闭窗口
-            document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_title_nwjjq > button").click();
+            var upDom = document.querySelector("body > div.Window_container_2MYCb > div:nth-child(2) > div > div.CmdSendText_body_2cy6w > div > div.CmdSendText_textMessageBox_2idnZ > div > div.CmdSendText_param_layout_19xQd > div > div > div > input");
+            if (leftDom !== null) {
+                // 处理面板从右侧弹出
+                // 填写左侧消息
+                window.inputValue(leftDom, msg);
+                // 填写右侧消息
+                var rightDom = document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_body_fyic5 > div.AlarmDealBox_body_bottomBox_3WfsT > div.AlarmDealBox_body_bottomBox_main_2-luY > div.AlarmDealBox_desBox_3IyGi > div:nth-child(2) > div.InputTextArea_container_2gCq8.InputTextArea_border_xAquO.AlarmDealBox_InputTextArea_7EoKs > div > textarea");
+                window.inputValue(rightDom, msg);
+                await sleep(1000);
+                // 提交处理
+                document.querySelector("#alarmDealWindow > div > div.AlarmDealBox_body_fyic5 > div.AlarmDealBox_body_bottomBox_3WfsT > div.AlarmDealBox_body_bottomBox_buttonBox_2nuEr > div > button:nth-child(1)").click();
+            }
+            if (upDom !== null) {
+                // 处理面板从中间弹出
+                // 填写上侧消息
+                window.inputValue(upDom, msg);
+                // 填写下侧消息
+                var downDom = document.querySelector("body > div.Window_container_2MYCb > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div.InputTextArea_container_2gCq8.InputTextArea_border_xAquO.AlarmBatchDealWindow_InputTextArea_iaQ0_ > div > textarea");
+                window.inputValue(downDom, msg);
+                await sleep(1000);
+                // 提交处理
+                document.querySelector("body > div.Window_container_2MYCb > div.Window_footer_PRMYT > button:nth-child(1)").click();
+                // document.querySelector("body > div:nth-child(15) > div.Window_footer_PRMYT > button:nth-child(1)")
+            }
             await sleep(2000);
         }
     }
@@ -114,6 +155,6 @@ async function solveAlarm() {
     'use strict';
     window.onload = function () {
         console.log('脚本已启动');
-        var loop = setInterval(solveAlarm, 60000);
+        solveAll();
     };
 })();
